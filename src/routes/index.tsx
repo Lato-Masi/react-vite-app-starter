@@ -2,6 +2,7 @@ import { lazy, FC, Suspense } from "react";
 import { useRoutes, RouteObject } from "react-router-dom";
 import PrivateRoute from "./PrivateRoute";
 
+const Dashboard = lazy(() => import("@/features/common/components/Dashboard"));
 const Welcome = lazy(() => import("@/features/misc/pages/Welcome"));
 const Login = lazy(() => import("@/features/authentication/pages/Login"));
 const Signup = lazy(() => import("@/features/authentication/pages/Signup"));
@@ -23,11 +24,19 @@ const routeList: RouteObject[] = [
   },
   {
     path: "/dashboard",
-    element: <PrivateRoute />,
+    element: (
+      <PrivateRoute>
+        <Dashboard />
+      </PrivateRoute>
+    ),
   },
   {
     path: "/settings",
-    element: <Settings />,
+    element: (
+      <PrivateRoute>
+        <Settings />
+      </PrivateRoute>
+    ),
   },
   {
     path: "*",
@@ -37,11 +46,7 @@ const routeList: RouteObject[] = [
 
 const RenderRouter: FC = () => {
   const element = useRoutes(routeList);
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      {element}
-    </Suspense>
-  );
+  return <Suspense fallback={<div>Loading...</div>}>{element}</Suspense>;
 };
 
 export default RenderRouter;
