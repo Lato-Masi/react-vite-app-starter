@@ -1,17 +1,14 @@
 import { FC } from "react";
 import { useNavigate } from "react-router-dom";
 import Dashboard from "@/features/common/components/Dashboard";
-import { useGetUserQuery } from "@/lib/api";
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 
 const PrivateRoute: FC = () => {
   const navigate = useNavigate();
-  const { data: user, isLoading, isError } = useGetUserQuery();
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (isError || !user) {
+  if (!isAuthenticated) {
     navigate("/login");
     return null;
   }

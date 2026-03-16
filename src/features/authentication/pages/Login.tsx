@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useLoginMutation } from "@/lib/api";
 import { useNavigate } from "react-router-dom";
 import { Chrome, Github, Twitter } from "lucide-react";
+import { useDispatch } from 'react-redux';
+import { setToken } from '@/features/authentication/authSlice';
 
 type LoginFormProps = {
   email: string;
@@ -11,6 +13,7 @@ type LoginFormProps = {
 
 export default function Login() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const loginMutation = useLoginMutation();
   const [form, setForm] = useState<LoginFormProps>({
     email: "",
@@ -26,7 +29,7 @@ export default function Login() {
       },
       {
         onSuccess: (data) => {
-          localStorage.setItem("token", data.token);
+          dispatch(setToken(data.token));
           navigate("/dashboard");
         },
       }
@@ -67,7 +70,7 @@ export default function Login() {
               type="password"
               id="password"
               value={form.password}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
               className="block w-full px-4 py-2 mt-2 text-purple-700 bg-white border rounded-md focus:border-purple-400 focus:ring-purple-300 focus:outline-none focus:ring focus:ring-opacity-40"
               required
             />

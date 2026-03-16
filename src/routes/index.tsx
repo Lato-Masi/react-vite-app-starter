@@ -1,11 +1,11 @@
-import { lazy, FC } from "react";
+import { lazy, FC, Suspense } from "react";
 import { useRoutes, RouteObject } from "react-router-dom";
-import Login from "@/features/authentication/pages/Login";
-import Welcome from "@/features/misc/pages/Welcome";
-import Signup from "@/features/authentication/pages/Signup";
 import PrivateRoute from "./PrivateRoute";
-import Settings from "@/features/user/pages/Settings";
 
+const Welcome = lazy(() => import("@/features/misc/pages/Welcome"));
+const Login = lazy(() => import("@/features/authentication/pages/Login"));
+const Signup = lazy(() => import("@/features/authentication/pages/Signup"));
+const Settings = lazy(() => import("@/features/user/pages/Settings"));
 const NotFound = lazy(() => import("@/features/misc/pages/404"));
 
 const routeList: RouteObject[] = [
@@ -37,7 +37,11 @@ const routeList: RouteObject[] = [
 
 const RenderRouter: FC = () => {
   const element = useRoutes(routeList);
-  return element;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      {element}
+    </Suspense>
+  );
 };
 
 export default RenderRouter;

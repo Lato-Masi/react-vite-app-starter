@@ -1,90 +1,48 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import axios from "../config/http";
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { User, LoginResponse } from './types';
 
-export interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: number;
-  email_verified_at: string | null;
-  createdAt: string;
-  updatedAt: string;
-  photo_url: string;
-}
+export const api = createApi({
+  reducerPath: 'api',
+  baseQuery: fetchBaseQuery({ 
+    baseUrl: 'http://localhost:8000/api', // Replace with your API base URL
+    prepareHeaders: (headers, { getState }) => {
+      const token = (getState() as any).auth.token;
+      if (token) {
+        headers.set('authorization', `Bearer ${token}`)
+      }
+      return headers;
+    }
+  }), 
+  endpoints: (builder) => ({
+    login: builder.mutation<LoginResponse, { email: string; password: string }>({
+      query: (credentials) => ({
+        url: 'login',
+        method: 'POST',
+        body: credentials,
+      }),
+    }),
+    logout: builder.mutation<void, void>({
+        query: () => ({
+            url: 'logout',
+            method: 'POST',
+        }),
+    }),
+    getUser: builder.query<User, void>({
+      query: () => 'user',
+    }),
+    changeSettings: builder.mutation<User, { name: string; email: string }>({
+      query: (settings) => ({
+        url: 'settings/profile',
+        method: 'PATCH',
+        body: settings,
+      }),
+    }),
+  }),
+});
 
-export interface LoginResponse {
-  token: string;
-  token_type: string;
-  expires_in: number;
-}
-
-export const logIn = async (
-  email: string,
-  password: string
-): Promise<LoginResponse> => {
-  const response = await axios.post("/login", {
-    email,
-    password,
-  });
-  return response.data;
-};
-
-export const useLoginMutation = () => {
-  return useMutation({
-    mutationFn: (credential: { email: string; password: string }) =>
-      logIn(credential.email, credential.password),
-  });
-};
-
-export const signUp = async (
-  name: string,
-  email: string,
-  password: string,
-  password_confirmation: string
-): Promise<unknown> => {
-  const response = await axios.post("/register", {
-    name,
-    email,
-    password,
-    password_confirmation,
-  });
-  if (response.status !== 200) {
-    throw new Error("Invalid credentials");
-  }
-  return response.data;
-};
-
-export const getUser = async (): Promise<User> => {
-  const response = await axios.get("/user");
-  if (response.status !== 200) {
-    throw new Error("Invalid credentials");
-  }
-  return response.data;
-};
-
-export const useGetUserQuery = () => {
-  return useQuery({ queryKey: ["user"], queryFn: getUser });
-};
-
-export const logOut = async (): Promise<void> => {
-  localStorage.removeItem("token");
-  const response = await axios.post("/logout");
-  console.log(response);
-};
-
-export const changeSettings = async (
-  name: string,
-  email: string
-): Promise<User> => {
-  const response = await axios.patch("/settings/profile", {
-    name,
-    email,
-  });
-  return response.data;
-};
-export const useSettingsMutation = () => {
-  return useMutation({
-    mutationFn: (credential: { name: string; email: string }) =>
-      changeSettings(credential.name, credential.email),
-  });
-};
+export const {
+  useLoginMutation,
+  useLogoutMutation,
+  useGetUserQuery,
+  useChangeSettingsMutation,
+} = api;

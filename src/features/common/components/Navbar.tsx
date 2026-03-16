@@ -2,9 +2,11 @@ import { useState } from "react";
 import { Dropdown, Button } from "antd";
 import type { MenuProps } from "antd";
 import { Menu, X } from 'lucide-react';
-import { User, logOut } from "@/lib/api";
+import { useLogoutMutation } from "@/lib/api";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "@/features/authentication/authSlice";
+import { RootState } from "@/store";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", current: true },
@@ -14,22 +16,19 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
-interface NavbarProps {
-  user: User;
-}
-
-export default function Navbar({ user }: NavbarProps) {
+export default function Navbar() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const queryClient = useQueryClient();
+  const user = useSelector((state: RootState) => state.auth.user);
 
-  const logOutMutation = useMutation({
-    mutationFn: logOut,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user"] });
-      navigate("/login");
-    },
-  });
+  const [logoutMutation] = useLogoutMutation();
+
+  const handleLogout = async () => {
+    await logoutMutation();
+    dispatch(logout());
+    navigate("/login");
+  };
 
   const items: MenuProps['items'] = [
     {
@@ -43,7 +42,7 @@ export default function Navbar({ user }: NavbarProps) {
     {
       key: '2',
       label: (
-        <a onClick={() => logOutMutation.mutate()}>
+        <a onClick={handleLogout}>
           Sign out
         </a>
       ),
