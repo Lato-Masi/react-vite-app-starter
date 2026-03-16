@@ -4,7 +4,7 @@ import { useLoginMutation } from "@/lib/api";
 import { useNavigate } from "react-router-dom";
 import { Chrome, Github, Twitter } from "lucide-react";
 import { useDispatch } from 'react-redux';
-import { setToken } from '@/features/authentication/authSlice';
+import { setCredentials } from '@/features/authentication/authSlice';
 
 type LoginFormProps = {
   email: string;
@@ -14,26 +14,25 @@ type LoginFormProps = {
 export default function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const loginMutation = useLoginMutation();
+  const [login, { isLoading }] = useLoginMutation();
   const [form, setForm] = useState<LoginFormProps>({
     email: "",
     password: "",
   });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    loginMutation.mutate(
-      {
+    try {
+      const data = await login({
         email: form.email,
         password: form.password,
-      },
-      {
-        onSuccess: (data) => {
-          dispatch(setToken(data.token));
-          navigate("/dashboard");
-        },
-      }
-    );
+      }).unwrap();
+      dispatch(setCredentials(data));
+      navigate("/dashboard");
+    } catch (error) {
+      // Handle error
+      console.error('Failed to login:', error);
+    }
   };
 
   return (
@@ -79,8 +78,11 @@ export default function Login() {
             Forget Password?
           </a>
           <div className="mt-6">
-            <button className="w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-purple-700 rounded-md hover:bg-purple-600 focus:outline-none focus:bg-purple-600">
-              Login
+            <button
+              className="w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-purple-700 rounded-md hover:bg-purple-600 focus:outline-none focus:bg-purple-600"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Logging in...' : 'Login'}
             </button>
           </div>
         </form>

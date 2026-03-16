@@ -21,6 +21,13 @@ export const api = createApi({
         body: credentials,
       }),
     }),
+    signUp: builder.mutation<User, { name: string, email: string; password: string, password_confirmation: string }>({
+      query: (credentials) => ({
+        url: 'register',
+        method: 'POST',
+        body: credentials,
+      }),
+    }),
     logout: builder.mutation<void, void>({
         query: () => ({
             url: 'logout',
@@ -45,4 +52,7 @@ export const {
   useLogoutMutation,
   useGetUserQuery,
   useChangeSettingsMutation,
+  useSignUpMutation
 } = api;
+
+export type { User };

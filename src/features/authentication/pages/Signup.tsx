@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { signUp } from "@/lib/api";
+import { useSignUpMutation } from "@/lib/api";
 import { useNavigate } from "react-router-dom";
 
 type SignupFormProps = {
@@ -12,6 +12,7 @@ type SignupFormProps = {
 
 const Signup = () => {
   const navigate = useNavigate();
+  const [signUp, { isLoading }] = useSignUpMutation();
   const [form, setForm] = useState<SignupFormProps>({
     name: "",
     email: "",
@@ -19,11 +20,19 @@ const Signup = () => {
     password_confirmation: "",
   });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(form);
-    signUp(form.name, form.email, form.password, form.password_confirmation);
-    navigate("/login");
+    try {
+      await signUp({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        password_confirmation: form.password_confirmation,
+      }).unwrap();
+      navigate("/login");
+    } catch (error) {
+      console.error('Failed to sign up:', error);
+    }
   };
 
   return (
@@ -103,8 +112,9 @@ const Signup = () => {
             <button
               type="submit"
               className="w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-purple-700 rounded-md hover:bg-purple-600 focus:outline-none focus:bg-purple-600"
+              disabled={isLoading}
             >
-              Sign up
+              {isLoading ? 'Signing up...' : 'Sign up'}
             </button>
           </div>
           <p className="mt-4">

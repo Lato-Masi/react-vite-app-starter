@@ -1,10 +1,10 @@
 import Dashboard from "@/features/common/components/Dashboard";
-import { useGetUserQuery, useSettingsMutation } from "@/lib/api";
+import { useGetUserQuery, useChangeSettingsMutation } from "@/lib/api";
 import { useState, useEffect } from "react";
 
 function Settings() {
   const { data: user, isLoading, isError } = useGetUserQuery();
-  const settingsMutation = useSettingsMutation();
+  const [changeSettings, { isLoading: isUpdating }] = useChangeSettingsMutation();
   const [settingForm, setSettingForm] = useState({
     name: "",
     email: "",
@@ -31,12 +31,16 @@ function Settings() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    settingsMutation.mutate({
-      name: settingForm.name,
-      email: settingForm.email,
-    });
+    try {
+      await changeSettings({
+        name: settingForm.name,
+        email: settingForm.email,
+      }).unwrap();
+    } catch (error) {
+      console.error('Failed to update settings:', error);
+    }
   };
 
   if (isLoading) return <div>Loading...</div>;
@@ -143,8 +147,9 @@ function Settings() {
           <button
             type="submit"
             className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            disabled={isUpdating}
           >
-            Save
+            {isUpdating ? 'Saving...' : 'Save'}
           </button>
         </div>
       </form>
