@@ -1,9 +1,9 @@
-import { Router, Request, Response } from 'express';
+
+import { Router } from 'express';
+import HealthController from '../controllers/health.controller';
 
 const router = Router();
 
-router.get('/', (req: Request, res: Response) => {
-  res.status(200).send({ status: 'UP' });
-});
+router.get('/', HealthController.getHealth);
 
 export default router;
